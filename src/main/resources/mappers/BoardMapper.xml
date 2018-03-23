@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dgit.mapper.BoardMapper">	
+	<sql id="selectSql">
+		select * from tbl_board
+	</sql>
+	<sql id="whereSql">
+		where bno = #{bno}
+	</sql>
+	<insert id="create">
+		insert into tbl_board (title,content, writer)
+		values (#{title},#{content},#{writer})
+	</insert>
+	
+	<select id="read" resultType="BoardVO">
+		<include refid="selectSql"></include>
+		<include refid="whereSql"></include>
+	</select>
+	
+	<select id="listAll" resultType="BoardVO">
+		<include refid="selectSql"/>
+		order by regdate desc ,bno desc
+	</select>
+	
+	<select id="listpage" resultType="BoardVO">
+		<include refid="selectSql"/>
+		order by regdate desc ,bno desc limit #{page},10
+	</select>
+	
+	<select id="listCriteria" resultType="BoardVO">
+		<include refid="selectSql"/>
+		order by regdate desc ,bno desc 
+		limit #{pageStart},#{perPageNum}
+	</select>
+	
+	<sql id="search">
+		<if test="searchType=='t'.toString()">
+			where title like CONCAT("%",#{keyword}, "%")
+		</if>
+		<if test="searchType=='c'.toString()">
+			where content like CONCAT("%",#{keyword}, "%")
+		</if>
+		<if test="searchType=='w'.toString()">
+			where writer like CONCAT("%",#{keyword}, "%")
+		</if>
+		<if test="searchType=='tc'.toString()">
+			where title like CONCAT("%",#{keyword}, "%")
+			or content like CONCAT("%",#{keyword}, "%")
+		</if>
+		<if test="searchType=='cw'.toString()">
+			where writer like CONCAT("%",#{keyword}, "%")
+			or content like CONCAT("%",#{keyword}, "%")
+		</if>
+		<if test="searchType=='tcw'.toString()">
+			where title like CONCAT("%",#{keyword}, "%")
+			or content like CONCAT("%",#{keyword}, "%")
+			or writer like CONCAT("%",#{keyword}, "%")
+		</if>
+	</sql>
+	
+	<select id="listSearch" resultType="BoardVO">
+		<include refid="selectSql"/>
+		<include refid='search'/>
+		order by regdate desc ,bno desc 
+		limit #{pageStart},#{perPageNum}
+	</select>
+	
+	<select id="countPaging" resultType="int">
+		select count(bno) from tbl_board
+	</select>
+	
+	<select id="listSearchcount" resultType="int">
+		select count(bno) from tbl_board
+		<include refid='search'/>
+	</select>
+	
+	<update id="update">
+		update tbl_board set title = #{title}, content = #{content}
+		<include refid="whereSql"></include>
+	</update>
+	
+	<update id="viewcnt" parameterType="int">
+		update tbl_board set viewcnt = viewcnt+1
+		<include refid="whereSql"></include>
+	</update>
+	
+	<update id="updateReplyCnt">
+		update tbl_board set replycnt = replycnt + #{amount} 
+		<include refid="whereSql"></include>
+	</update>
+	
+   <insert id="addAttach">
+   		insert into tbl_attach (fullName, bno) values (#{fullName}, #{bno})
+   </insert>
+		
+   <select id="getAttach" resultType="string">
+   		select fullName from tbl_attach where bno = #{bno} order by regdate
+   </select>
+   
+	<delete id="delete">
+		delete from tbl_board
+		<include refid="whereSql"></include>
+	</delete>
+</mapper>
